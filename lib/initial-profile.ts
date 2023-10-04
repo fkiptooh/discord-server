@@ -1,7 +1,7 @@
 import { currentUser, redirectToSignIn } from "@clerk/nextjs";
 import { db } from "@/lib/db";
 
-export const initialProfile =async () => {
+export const initialProfile = async () => {
     const user = await currentUser();
 
     if (!user) {
@@ -22,8 +22,8 @@ export const initialProfile =async () => {
         data: {
             userId: user.id,
             name: `${user.firstName} ${user.lastName}`,
-            email: user.emailAddresses[0].emailAddress,
-            imageUrl: user.imageUrl
+            imageUrl: user.imageUrl,
+            email: user.emailAddresses[0].emailAddress
         }
     });
 
