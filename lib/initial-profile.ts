@@ -5,6 +5,7 @@ export const initialProfile = async () => {
     const user = await currentUser();
 
     if (!user) {
+        // Make sure the redirectToSignIn function returns an absolute path URL
         return redirectToSignIn();
     }
 
@@ -18,6 +19,7 @@ export const initialProfile = async () => {
         return profile;
     }
 
+    // Example: Ensure that the userId, name, imageUrl, and email are provided
     const newProfile = await db.profile.create({
         data: {
             userId: user.id,
@@ -28,4 +30,4 @@ export const initialProfile = async () => {
     });
 
     return newProfile;
-}
+};

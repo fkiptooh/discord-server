@@ -48,7 +48,10 @@ export const ServerHeader = ({ server, role }: ServerHeaderProps) => {
           </DropdownMenuItem>
         )}
         {isAdmin && (
-          <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer">
+          <DropdownMenuItem
+            onClick={() => onOpen("editServer", { server })}
+            className="px-3 py-2 text-sm cursor-pointer"
+          >
             Server Settings
             <Settings className="h-4 w-4 ml-auto" />
           </DropdownMenuItem>
@@ -67,7 +70,7 @@ export const ServerHeader = ({ server, role }: ServerHeaderProps) => {
         )}
         {isModerator && <DropdownMenuSeparator />}
         {isAdmin && (
-          <DropdownMenuItem className="text-rose-500 px-3 py-2 text-sm cursor-pointer hover:bg-rose-400">
+          <DropdownMenuItem className="text-rose-500 px-3 py-2 text-sm cursor-pointer">
             Delete Server
             <Trash className="h-4 w-4 ml-auto" />
           </DropdownMenuItem>
