@@ -9,7 +9,9 @@ interface ServerSidebarProps {
 }
 export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
   const profile = await currentProfile();
-  if (!profile) return redirect("/");
+  if (!profile) {
+    return redirect("/");
+  }
 
   const server = await db.server.findUnique({
     where: {
