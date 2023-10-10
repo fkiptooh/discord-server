@@ -120,7 +120,8 @@ export const MembersModal = () => {
               {server.profileId !== member.profileId &&
                 loadingId !== member.id && (
                   <div className="ml-auto">
-                    <DropdownMenu modal={isOpen}>
+                    {/* Bug */}
+                    <DropdownMenu>
                       <DropdownMenuTrigger>
                         <MoreVertical className="h-4 w-4 text-zinc-500" />
                       </DropdownMenuTrigger>
