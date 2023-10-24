@@ -30,7 +30,7 @@ export const ChatInput = ({ apiUrl, query, name, type }: ChatInputProps) => {
       content: "",
     },
   });
-
+  // TODO: Modify the upload button to include pdf, images and create the api route
   const isLoading = form.formState.isSubmitting;
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
