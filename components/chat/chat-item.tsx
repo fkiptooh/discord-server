@@ -1,8 +1,18 @@
 import { Member, MemberRole, Profile } from "@prisma/client";
 import { UserAvatar } from "../user-avatar";
 import { ActionTooltip } from "../action-tooltip";
-import { FileIcon, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Edit, FileIcon, ShieldAlert, ShieldCheck, Trash } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import qs from "query-string";
+import { Form, FormField, FormControl, FormItem } from "../ui/form";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 const roleIconMap = {
   GUEST: null,
@@ -23,6 +33,11 @@ interface ChatItemProps {
   socketUrl: string;
   socketQuery: Record<string, string>;
 }
+
+const formSchema = z.object({
+  content: z.string().min(1),
+});
+
 export const ChatItem = ({
   id,
   content,
@@ -35,6 +50,34 @@ export const ChatItem = ({
   socketUrl,
   socketQuery,
 }: ChatItemProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (event: any) => {
+      if (event.key === "Escape" || event.keyCode === 27) {
+        setIsEditing(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keyDown", handleKeyDown);
+  }, []);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      content: content,
+    },
+  });
+
+  useEffect(() => {
+    form.reset({
+      content: content,
+    });
+  }, [content, form]);
+
   const fileType = fileUrl?.split(".").pop();
 
   const isAdmin = currentMembers.role === MemberRole.ADMIN;
@@ -42,10 +85,14 @@ export const ChatItem = ({
   const isOwner = currentMembers.id === member.id;
 
   const canDeleteMessage = !deleted && (isAdmin || isModerator || isOwner);
-  const canEditMessage = !deleted && isOwner;
+  const canEditMessage = !fileUrl && !deleted && isOwner;
 
   const isPDF = fileType === "pdf" && fileUrl;
   const isImage = !isPDF && fileUrl;
+
+  const onSubmit = (values: any) => {
+    console.log(values);
+  };
   return (
     <div className="relative group flex items-center hover:bg-black/5 p-4 transition w-full">
       <div className="group flex gap-x-2 items-start w-full">
@@ -94,8 +141,71 @@ export const ChatItem = ({
               </a>
             </div>
           )}
+          {!fileUrl && !isEditing && (
+            <p
+              className={cn(
+                "text-sm text-zinc-600 dark:text-zinc-300",
+                deleted &&
+                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1"
+              )}
+            >
+              {content}
+              {isUpdated && !deleted && (
+                <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
+                  (edited)
+                </span>
+              )}
+            </p>
+          )}
+          {!fileUrl && isEditing && (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex items-center w-full gap-x-2 pt-2"
+              >
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <div className="relative w-full">
+                          <Input
+                            className="p-2 bg-zinc-200/90 dark:bg-zinc-700/75 border-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-zinc-600 dark:text-zinc-200"
+                            placeholder="Edited message"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Button size="sm" variant="primary">
+                  Save
+                </Button>
+              </form>
+              <span className="text-[10px] mt-1 text-zinc-400">
+                Press escape to save, enter to save
+              </span>
+            </Form>
+          )}
         </div>
       </div>
+      {canDeleteMessage && (
+        <div className="hidden group-hover:flex items-center gap-x-2 absolute p-1 -top-2 right-5 bg-white dark:bg-zinc-800 border rounded-sm">
+          {canEditMessage && (
+            <ActionTooltip label="Edit">
+              <Edit
+                onClick={() => setIsEditing(true)}
+                className="cursor-pointer w-4 h-4 ml-auto text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
+              />
+            </ActionTooltip>
+          )}
+          <ActionTooltip label="Delete">
+            <Trash className="cursor-pointer w-4 h-4 ml-auto text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition" />
+          </ActionTooltip>
+        </div>
+      )}
     </div>
   );
 };
